@@ -5,12 +5,14 @@ namespace NEventStore.Persistence.Sql
     using System.Transactions;
     using NEventStore.Persistence.Sql.SqlDialects;
     using NEventStore.Serialization;
+    using NEventStore.Persistence.Sql.Sequencer;
 
     public class SqlPersistenceFactory : IPersistenceFactory
     {
         private const int DefaultPageSize = 128;
         private readonly IConnectionFactory _connectionFactory;
         private readonly ISqlDialect _dialect;
+        private readonly ISequencer _sequencer;
         private readonly TransactionScopeOption _scopeOption;
         private readonly ISerialize _serializer;
         private readonly IStreamIdHasher _streamIdHasher;
@@ -27,6 +29,7 @@ namespace NEventStore.Persistence.Sql
             ISerialize serializer,
             ISqlDialect dialect,
             IStreamIdHasher streamIdHasher = null,
+            ISequencer sequencer = null, 
             TransactionScopeOption scopeOption = TransactionScopeOption.Suppress,
             int pageSize = DefaultPageSize)
             : this(serializer, scopeOption, streamIdHasher, pageSize)
@@ -38,6 +41,7 @@ namespace NEventStore.Persistence.Sql
 
             _connectionFactory = factory;
             _dialect = dialect;
+            _sequencer = sequencer;
         }
 
         private SqlPersistenceFactory(ISerialize serializer, TransactionScopeOption scopeOption,  IStreamIdHasher streamIdHasher, int pageSize)
@@ -58,6 +62,7 @@ namespace NEventStore.Persistence.Sql
             get { return _dialect; }
         }
 
+
         protected virtual ISerialize Serializer
         {
             get { return _serializer; }
@@ -72,7 +77,7 @@ namespace NEventStore.Persistence.Sql
 
         public virtual IPersistStreams Build()
         {
-            return new SqlPersistenceEngine(ConnectionFactory, Dialect, Serializer, _scopeOption, PageSize, StreamIdHasher);
+            return new SqlPersistenceEngine(ConnectionFactory, Dialect, Serializer, _sequencer, _scopeOption, PageSize, StreamIdHasher);
         }
 
         protected static ISqlDialect ResolveDialect(ConnectionStringSettings settings)

@@ -24,6 +24,8 @@ namespace NEventStore.Persistence.Sql.SqlDialects
             get { return base.GetUndispatchedCommits.Replace("0", "false"); }
         }
 
+        public override string InitializeSequencer => throw new NotImplementedException();
+
         public override bool IsDuplicate(Exception exception)
         {
             string message = exception.Message.ToUpperInvariant();

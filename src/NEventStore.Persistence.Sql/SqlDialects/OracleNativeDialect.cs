@@ -195,6 +195,8 @@ namespace NEventStore.Persistence.Sql.SqlDialects
             get { return (q, r) => { } ; }
         }
 
+        public override string InitializeSequencer => throw new NotImplementedException();
+
         public override void AddPayloadParamater(IConnectionFactory connectionFactory, IDbConnection connection, IDbStatement cmd, byte[] payload)
         {
             if (_addPayloadParamater == null)

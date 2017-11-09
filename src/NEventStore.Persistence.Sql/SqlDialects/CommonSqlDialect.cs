@@ -14,6 +14,8 @@ namespace NEventStore.Persistence.Sql.SqlDialects
             get { return CommonSqlStatements.PurgeStorage; }
         }
 
+        public abstract string InitializeSequencer { get; }
+
         public string PurgeBucket
         {
             get { return CommonSqlStatements.PurgeBucket; }

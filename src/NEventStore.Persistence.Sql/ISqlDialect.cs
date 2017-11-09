@@ -8,6 +8,7 @@ namespace NEventStore.Persistence.Sql
     public interface ISqlDialect
     {
         string InitializeStorage { get; }
+        string InitializeSequencer { get; }
         string PurgeStorage { get; }
         string PurgeBucket { get; }
         string Drop { get; }

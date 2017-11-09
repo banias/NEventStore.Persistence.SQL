@@ -12,6 +12,11 @@ namespace NEventStore.Persistence.Sql.SqlDialects
         private const int UniqueIndexViolation = 2601;
         private const int UniqueKeyViolation = 2627;
 
+        public override string InitializeSequencer
+        {
+            get { return MsSqlStatements.InitializeSequencer; }
+        }
+
         public override string InitializeStorage
         {
             get { return MsSqlStatements.InitializeStorage; }

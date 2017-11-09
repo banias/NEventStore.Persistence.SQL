@@ -6,6 +6,7 @@ namespace NEventStore
     using NEventStore.Logging;
     using NEventStore.Persistence.Sql;
     using NEventStore.Serialization;
+    using NEventStore.Persistence.Sql.Sequencer;
 
     public class SqlPersistenceWireup : PersistenceWireup
     {
@@ -27,6 +28,7 @@ namespace NEventStore
                 c.Resolve<ISerialize>(),
                 c.Resolve<ISqlDialect>(),
                 c.Resolve<IStreamIdHasher>(),
+                c.Resolve<ISequencer>(),
                 c.Resolve<TransactionScopeOption>(),
                 _pageSize).Build());
         }
@@ -42,6 +44,12 @@ namespace NEventStore
         {
             Logger.Debug(Messages.PagingSpecified, records);
             _pageSize = records;
+            return this;
+        }
+
+        public virtual SqlPersistenceWireup WithSequencer(ISequencer sequencer)
+        {
+            Container.Register(sequencer);
             return this;
         }
 

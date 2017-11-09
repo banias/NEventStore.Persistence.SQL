@@ -9,6 +9,7 @@ namespace NEventStore.Persistence.Sql
     using System.Transactions;
     using NEventStore.Logging;
     using NEventStore.Serialization;
+    using NEventStore.Persistence.Sql.Sequencer;
 
     public class SqlPersistenceEngine : IPersistStreams
     {
@@ -22,20 +23,24 @@ namespace NEventStore.Persistence.Sql
         private bool _disposed;
         private int _initialized;
         private readonly IStreamIdHasher _streamIdHasher;
+        private readonly ISequencer _sequencer;
 
         public SqlPersistenceEngine(
             IConnectionFactory connectionFactory,
             ISqlDialect dialect,
             ISerialize serializer,
             TransactionScopeOption scopeOption,
+            ISequencer sequencer,
             int pageSize)
-            : this(connectionFactory, dialect, serializer, scopeOption, pageSize, new Sha1StreamIdHasher())
-        { }
+            : this(connectionFactory, dialect, serializer, sequencer, scopeOption, pageSize, new Sha1StreamIdHasher())
+        {
+        }
 
         public SqlPersistenceEngine(
             IConnectionFactory connectionFactory,
             ISqlDialect dialect,
             ISerialize serializer,
+            ISequencer sequencer,
             TransactionScopeOption scopeOption,
             int pageSize,
             IStreamIdHasher streamIdHasher)
@@ -68,6 +73,7 @@ namespace NEventStore.Persistence.Sql
             _connectionFactory = connectionFactory;
             _dialect = dialect;
             _serializer = serializer;
+            _sequencer = sequencer;
             _scopeOption = scopeOption;
             _pageSize = pageSize;
             _streamIdHasher = new StreamIdHasherValidator(streamIdHasher);
@@ -90,6 +96,11 @@ namespace NEventStore.Persistence.Sql
 
             Logger.Debug(Messages.InitializingStorage);
             ExecuteCommand(statement => statement.ExecuteWithoutExceptions(_dialect.InitializeStorage));
+            if (_sequencer != null)
+            {
+                ExecuteCommand(s => s.ExecuteWithoutExceptions(_dialect.InitializeSequencer));
+                _sequencer.Start();
+            }
         }
 
         public virtual IEnumerable<ICommit> GetFrom(string bucketId, string streamId, int minRevision, int maxRevision)
